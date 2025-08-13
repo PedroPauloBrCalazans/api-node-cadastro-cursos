@@ -59,6 +59,51 @@ server.post("/courses", (request, reply) => {
   return reply.status(201).send({ courseId });
 });
 
+server.put("/courses/:id", (request, reply) => {
+  type Params = {
+    id: string;
+  };
+
+  type Body = {
+    title: string;
+  };
+
+  const params = request.params as Params;
+  const body = request.body as Body;
+
+  const courseIndex = courses.findIndex((course) => course.id === params.id);
+
+  if (courseIndex === -1) {
+    return reply.status(404).send({ message: "Curso não encontrado." });
+  }
+
+  if (!body.title) {
+    return reply.status(400).send({ message: "Título obrigatório." });
+  }
+
+  courses[courseIndex].title = body.title;
+
+  return reply.status(200).send({ message: "Curso atualizado com sucesso." });
+});
+
+server.delete("/courses/:id", (request, reply) => {
+  type Params = {
+    id: string;
+  };
+
+  const params = request.params as Params;
+
+  const courseIndex = courses.findIndex((course) => course.id === params.id);
+
+  if (courseIndex === -1) {
+    return reply.status(404).send({ message: "Curso não encontrado." });
+  }
+
+  courses.splice(courseIndex, 1);
+
+  return reply.status(200).send({ message: "Curso removido com sucesso." });
+});
+
 server.listen({ port: 3333 }).then(() => {
   console.log("HTTP server running!");
 });
