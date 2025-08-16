@@ -2,6 +2,7 @@ import fastify from "fastify";
 import crypto from "node:crypto"; //modulo interno do Node
 import { db } from "./database/client.ts";
 import { courses } from "./database/schema.ts";
+import { asc, eq } from "drizzle-orm";
 
 const server = fastify({
   logger: {
@@ -15,98 +16,107 @@ const server = fastify({
   }, //toda requisição que faço, vai dar um logger no terminal
 });
 
-// const courses = [
-//   { id: "1", title: "Curso de Node.js" },
-//   { id: "2", title: "Curso de React" },
-//   { id: "3", title: "Curso de React Native" },
-// ];
-
 server.get("/courses", async (request, reply) => {
-  const result = await db.select().from(courses);
+  const result = await db.select().from(courses).orderBy(asc(courses.title));
 
   return reply.send({ courses: result });
 });
 
-// server.get("/courses/:id", (request, reply) => {
-//   type Params = {
-//     id: string;
-//   };
+server.get("/courses/:id", async (request, reply) => {
+  type Params = {
+    id: string;
+  };
 
-//   const params = request.params as Params;
-//   const courseId = params.id;
+  const params = request.params as Params;
+  const courseId = params.id;
 
-//   const course = courses.find((course) => course.id === courseId);
+  const result = await db
+    .select()
+    .from(courses)
+    .where(eq(courses.id, courseId));
 
-//   if (course) {
-//     return { course };
-//   }
+  if (result.length > 0) {
+    return { course: result[0] };
+  }
 
-//   return reply.status(404).send();
-// });
+  return reply.status(404).send();
+});
 
-// server.post("/courses", (request, reply) => {
-//   type Body = {
-//     title: string;
-//   };
+server.post("/courses", async (request, reply) => {
+  type Body = {
+    title: string;
+  };
 
-//   const courseId = crypto.randomUUID();
+  const courseId = crypto.randomUUID();
 
-//   const body = request.body as Body;
-//   const courseTitle = body.title;
+  const body = request.body as Body;
+  const courseTitle = body.title;
 
-//   if (!courseTitle) {
-//     return reply.status(400).send({ message: "Título obrigatório." });
-//   }
+  if (!courseTitle) {
+    return reply.status(400).send({ message: "Título obrigatório." });
+  }
 
-//   courses.push({ id: courseId, title: courseTitle });
+  const result = await db
+    .insert(courses)
+    .values({ id: courseId, title: courseTitle })
+    .returning();
 
-//   return reply.status(201).send({ courseId });
-// });
+  return reply.status(201).send({ courseId: result[0].id });
+});
 
-// server.put("/courses/:id", (request, reply) => {
-//   type Params = {
-//     id: string;
-//   };
+server.put("/courses/:id", async (request, reply) => {
+  type Params = {
+    id: string;
+  };
 
-//   type Body = {
-//     title: string;
-//   };
+  type Body = {
+    title: string;
+  };
 
-//   const params = request.params as Params;
-//   const body = request.body as Body;
+  const params = request.params as Params;
+  const body = request.body as Body;
 
-//   const courseIndex = courses.findIndex((course) => course.id === params.id);
+  const coursesList = await db.select().from(courses);
+  const courseIndex = coursesList.findIndex(
+    (course) => course.id === params.id
+  );
 
-//   if (courseIndex === -1) {
-//     return reply.status(404).send({ message: "Curso não encontrado." });
-//   }
+  if (courseIndex === -1) {
+    return reply.status(404).send({ message: "Curso não encontrado." });
+  }
 
-//   if (!body.title) {
-//     return reply.status(400).send({ message: "Título obrigatório." });
-//   }
+  if (!body.title) {
+    return reply.status(400).send({ message: "Título obrigatório." });
+  }
 
-//   courses[courseIndex].title = body.title;
+  await db
+    .update(courses)
+    .set({ title: body.title })
+    .where(eq(courses.id, params.id));
 
-//   return reply.status(200).send({ message: "Curso atualizado com sucesso." });
-// });
+  return reply.status(200).send({ message: "Curso atualizado com sucesso." });
+});
 
-// server.delete("/courses/:id", (request, reply) => {
-//   type Params = {
-//     id: string;
-//   };
+server.delete("/courses/:id", async (request, reply) => {
+  type Params = {
+    id: string;
+  };
 
-//   const params = request.params as Params;
+  const params = request.params as Params;
 
-//   const courseIndex = courses.findIndex((course) => course.id === params.id);
+  const coursesList = await db.select().from(courses);
+  const courseIndex = coursesList.findIndex(
+    (course) => course.id === params.id
+  );
 
-//   if (courseIndex === -1) {
-//     return reply.status(404).send({ message: "Curso não encontrado." });
-//   }
+  if (courseIndex === -1) {
+    return reply.status(404).send({ message: "Curso não encontrado." });
+  }
 
-//   courses.splice(courseIndex, 1);
+  await db.delete(courses).where(eq(courses.id, params.id));
 
-//   return reply.status(200).send({ message: "Curso removido com sucesso." });
-// });
+  return reply.status(200).send({ message: "Curso removido com sucesso." });
+});
 
 server.listen({ port: 3333 }).then(() => {
   console.log("HTTP server running!");
