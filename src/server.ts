@@ -3,6 +3,12 @@ import crypto from "node:crypto"; //modulo interno do Node
 import { db } from "./database/client.ts";
 import { courses } from "./database/schema.ts";
 import { asc, eq } from "drizzle-orm";
+import {
+  validatorCompiler,
+  serializerCompiler,
+  type ZodTypeProvider,
+} from "fastify-type-provider-zod";
+import { z } from "zod";
 
 const server = fastify({
   logger: {
@@ -14,7 +20,10 @@ const server = fastify({
       },
     },
   }, //toda requisição que faço, vai dar um logger no terminal
-});
+}).withTypeProvider<ZodTypeProvider>();
+
+server.setSerializerCompiler(serializerCompiler);
+server.setValidatorCompiler(validatorCompiler);
 
 server.get("/courses", async (request, reply) => {
   const result = await db.select().from(courses).orderBy(asc(courses.title));
@@ -22,47 +31,51 @@ server.get("/courses", async (request, reply) => {
   return reply.send({ courses: result });
 });
 
-server.get("/courses/:id", async (request, reply) => {
-  type Params = {
-    id: string;
-  };
+server.get(
+  "/courses/:id",
+  {
+    schema: {
+      params: z.object({
+        id: z.uuid(),
+      }),
+    },
+  },
+  async (request, reply) => {
+    const courseId = request.params.id;
 
-  const params = request.params as Params;
-  const courseId = params.id;
+    const result = await db
+      .select()
+      .from(courses)
+      .where(eq(courses.id, courseId));
 
-  const result = await db
-    .select()
-    .from(courses)
-    .where(eq(courses.id, courseId));
+    if (result.length > 0) {
+      return { course: result[0] };
+    }
 
-  if (result.length > 0) {
-    return { course: result[0] };
+    return reply.status(404).send();
   }
+);
 
-  return reply.status(404).send();
-});
+server.post(
+  "/courses",
+  {
+    schema: {
+      body: z.object({
+        title: z.string().min(5, "Título precisa ter 5 caracteres"),
+      }),
+    },
+  },
+  async (request, reply) => {
+    const courseTitle = request.body.title;
 
-server.post("/courses", async (request, reply) => {
-  type Body = {
-    title: string;
-  };
+    const result = await db
+      .insert(courses)
+      .values({ title: courseTitle })
+      .returning();
 
-  const courseId = crypto.randomUUID();
-
-  const body = request.body as Body;
-  const courseTitle = body.title;
-
-  if (!courseTitle) {
-    return reply.status(400).send({ message: "Título obrigatório." });
+    return reply.status(201).send({ courseId: result[0].id });
   }
-
-  const result = await db
-    .insert(courses)
-    .values({ id: courseId, title: courseTitle })
-    .returning();
-
-  return reply.status(201).send({ courseId: result[0].id });
-});
+);
 
 server.put("/courses/:id", async (request, reply) => {
   type Params = {
