@@ -23,7 +23,11 @@ export const deleteCourseRoute: FastifyPluginAsyncZod = async (server) => {
               })
               .describe("Curso removido com sucesso."),
           }),
-          404: z.null().describe("Curso não encontrado."),
+          404: z
+            .object({
+              message: z.string(),
+            })
+            .describe("Curso não encontrado!"),
         },
       },
     },
@@ -34,7 +38,7 @@ export const deleteCourseRoute: FastifyPluginAsyncZod = async (server) => {
       const course = await db.select().from(courses).where(eq(courses.id, id));
 
       if (course.length === 0) {
-        return reply.status(404).send(null);
+        return reply.status(404).send({ message: "Curso não encontrado!" });
       }
 
       // Deleta o curso

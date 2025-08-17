@@ -31,7 +31,11 @@ export const updateCourseRoute: FastifyPluginAsyncZod = async (server) => {
               description: z.string().nullable(),
             }),
           }),
-          404: z.null().describe("Curso não encontrado."),
+          404: z
+            .object({
+              message: z.string(),
+            })
+            .describe("Curso não encontrado!"),
         },
       },
     },
@@ -47,7 +51,7 @@ export const updateCourseRoute: FastifyPluginAsyncZod = async (server) => {
         .limit(1);
 
       if (existingCourse.length === 0) {
-        return reply.status(404).send(null);
+        return reply.status(404).send({ message: "Curso não encontrado!" });
       }
 
       // Atualiza o curso
