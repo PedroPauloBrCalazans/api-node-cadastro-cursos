@@ -11,9 +11,9 @@ import {
 } from "fastify-type-provider-zod";
 import { fastifySwagger } from "@fastify/swagger";
 import { fastifySwaggerUi } from "@fastify/swagger-ui";
-import { createCourseRoute } from "./routes/create-course.ts";
-import { getCourseByIdRoute } from "./routes/get-course-by-id.ts";
-import { getCoursesRoute } from "./routes/get-course.ts";
+import { createCourseRoute } from "./routes/courses/create-course.ts";
+import { getCourseByIdRoute } from "./routes/courses/get-course-by-id.ts";
+import { getCoursesRoute } from "./routes/courses/get-course.ts";
 
 const server = fastify({
   logger: {
@@ -27,19 +27,21 @@ const server = fastify({
   }, //toda requisição que faço, vai dar um logger no terminal
 }).withTypeProvider<ZodTypeProvider>();
 
-server.register(fastifySwagger, {
-  openapi: {
-    info: {
-      title: "Desafio Node.js",
-      version: "1.0.0",
+if (process.env.NODE_ENV === "development") {
+  server.register(fastifySwagger, {
+    openapi: {
+      info: {
+        title: "Desafio Node.js",
+        version: "1.0.0",
+      },
     },
-  },
-  transform: jsonSchemaTransform,
-});
+    transform: jsonSchemaTransform,
+  });
 
-server.register(fastifySwaggerUi, {
-  routePrefix: "/docs",
-});
+  server.register(fastifySwaggerUi, {
+    routePrefix: "/docs",
+  });
+}
 
 server.setSerializerCompiler(serializerCompiler);
 server.setValidatorCompiler(validatorCompiler);
@@ -79,27 +81,6 @@ server.put("/courses/:id", async (request, reply) => {
     .where(eq(courses.id, params.id));
 
   return reply.status(200).send({ message: "Curso atualizado com sucesso." });
-});
-
-server.delete("/courses/:id", async (request, reply) => {
-  type Params = {
-    id: string;
-  };
-
-  const params = request.params as Params;
-
-  const coursesList = await db.select().from(courses);
-  const courseIndex = coursesList.findIndex(
-    (course) => course.id === params.id
-  );
-
-  if (courseIndex === -1) {
-    return reply.status(404).send({ message: "Curso não encontrado." });
-  }
-
-  await db.delete(courses).where(eq(courses.id, params.id));
-
-  return reply.status(200).send({ message: "Curso removido com sucesso." });
 });
 
 server.listen({ port: 3333 }).then(() => {

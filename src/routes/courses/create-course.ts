@@ -1,7 +1,7 @@
 import { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import z from "zod";
-import { db } from "../database/client.ts";
-import { courses } from "../database/schema.ts";
+import { db } from "../../database/client.ts";
+import { courses } from "../../database/schema.ts";
 
 export const createCourseRoute: FastifyPluginAsyncZod = async (server) => {
   server.post(
