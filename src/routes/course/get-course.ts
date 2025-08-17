@@ -10,7 +10,7 @@ export const getCoursesRoute: FastifyPluginAsyncZod = async (server) => {
     {
       schema: {
         tags: ["courses"],
-        summary: "GetAll a course",
+        summary: "Recuperar todos os cursos",
         description: "Essa recupera todos os curso no BD",
         response: {
           200: z.object({

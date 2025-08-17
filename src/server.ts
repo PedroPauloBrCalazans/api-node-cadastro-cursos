@@ -1,8 +1,5 @@
 import fastify from "fastify";
 import crypto from "node:crypto"; //modulo interno do Node
-import { db } from "./database/client.ts";
-import { courses } from "./database/schema.ts";
-import { eq } from "drizzle-orm";
 import {
   validatorCompiler,
   serializerCompiler,
@@ -11,9 +8,12 @@ import {
 } from "fastify-type-provider-zod";
 import { fastifySwagger } from "@fastify/swagger";
 import { fastifySwaggerUi } from "@fastify/swagger-ui";
-import { createCourseRoute } from "./routes/courses/create-course.ts";
-import { getCourseByIdRoute } from "./routes/courses/get-course-by-id.ts";
-import { getCoursesRoute } from "./routes/courses/get-course.ts";
+
+import { getCourseByIdRoute } from "./routes/course/get-course-by-id.ts";
+import { deleteCourseRoute } from "./routes/course/delete-course.ts";
+import { createCourseRoute } from "./routes/course/create-course.ts";
+import { getCoursesRoute } from "./routes/course/get-course.ts";
+import { updateCourseRoute } from "./routes/course/update-course.ts";
 
 const server = fastify({
   logger: {
@@ -25,7 +25,7 @@ const server = fastify({
       },
     },
   }, //toda requisição que faço, vai dar um logger no terminal
-}).withTypeProvider<ZodTypeProvider>();
+}).withTypeProvider<ZodTypeProvider>(); //conecta o sistema de tipos do Fastify com o Zod, para que as validações e os tipos definidos com Zod também funcionem no TypeScript.
 
 if (process.env.NODE_ENV === "development") {
   server.register(fastifySwagger, {
@@ -49,39 +49,8 @@ server.setValidatorCompiler(validatorCompiler);
 server.register(createCourseRoute);
 server.register(getCourseByIdRoute);
 server.register(getCoursesRoute);
-
-server.put("/courses/:id", async (request, reply) => {
-  type Params = {
-    id: string;
-  };
-
-  type Body = {
-    title: string;
-  };
-
-  const params = request.params as Params;
-  const body = request.body as Body;
-
-  const coursesList = await db.select().from(courses);
-  const courseIndex = coursesList.findIndex(
-    (course) => course.id === params.id
-  );
-
-  if (courseIndex === -1) {
-    return reply.status(404).send({ message: "Curso não encontrado." });
-  }
-
-  if (!body.title) {
-    return reply.status(400).send({ message: "Título obrigatório." });
-  }
-
-  await db
-    .update(courses)
-    .set({ title: body.title })
-    .where(eq(courses.id, params.id));
-
-  return reply.status(200).send({ message: "Curso atualizado com sucesso." });
-});
+server.register(deleteCourseRoute);
+server.register(updateCourseRoute);
 
 server.listen({ port: 3333 }).then(() => {
   console.log("HTTP server running!");
