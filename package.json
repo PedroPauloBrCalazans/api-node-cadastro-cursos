@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "ts-node-dev --env-file .env --transpile-only --ignore-watch node_modules src/server.ts",
+    "db:seed": "ts-node-dev --env-file .env ./src/database/seed.ts",
     "db:generate": "drizzle-kit generate --config ./src/drizzle.config.ts",
     "db:migrate": "drizzle-kit migrate --config ./src/drizzle.config.ts",
     "db:studio": "drizzle-kit studio --config ./src/drizzle.config.ts"
@@ -23,6 +24,7 @@
     "zod": "^4.0.17"
   },
   "devDependencies": {
+    "@faker-js/faker": "^9.9.0",
     "@types/node": "^24.2.1",
     "drizzle-kit": "^0.31.4",
     "ts-node": "^10.9.2",
