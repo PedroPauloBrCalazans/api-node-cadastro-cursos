@@ -7,7 +7,8 @@
     "db:seed": "ts-node-dev --env-file .env ./src/database/seed.ts",
     "db:generate": "drizzle-kit generate --config ./src/drizzle.config.ts",
     "db:migrate": "drizzle-kit migrate --config ./src/drizzle.config.ts",
-    "db:studio": "drizzle-kit studio --config ./src/drizzle.config.ts"
+    "db:studio": "drizzle-kit studio --config ./src/drizzle.config.ts",
+    "test": "vitest run"
   },
   "keywords": [],
   "author": "",
@@ -29,6 +30,7 @@
     "drizzle-kit": "^0.31.4",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
   }
 }
