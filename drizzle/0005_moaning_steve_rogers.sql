@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "enrollments_table_userId_coursesId_index" ON "enrollments_table" USING btree ("userId","coursesId");
