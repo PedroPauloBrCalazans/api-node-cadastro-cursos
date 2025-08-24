@@ -27,7 +27,9 @@
   "devDependencies": {
     "@faker-js/faker": "^9.9.0",
     "@types/node": "^24.2.1",
+    "@types/supertest": "^6.0.3",
     "drizzle-kit": "^0.31.4",
+    "supertest": "^7.1.4",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.2",
