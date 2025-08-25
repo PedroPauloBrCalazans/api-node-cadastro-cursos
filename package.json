@@ -8,7 +8,7 @@
     "db:generate": "drizzle-kit generate --config ./src/drizzle.config.ts",
     "db:migrate": "drizzle-kit migrate --config ./src/drizzle.config.ts",
     "db:studio": "drizzle-kit studio --config ./src/drizzle.config.ts",
-    "test": "vitest run"
+    "test": "dotenv -e .env vitest run"
   },
   "keywords": [],
   "author": "",
@@ -28,6 +28,7 @@
     "@faker-js/faker": "^9.9.0",
     "@types/node": "^24.2.1",
     "@types/supertest": "^6.0.3",
+    "dotenv-cli": "^10.0.0",
     "drizzle-kit": "^0.31.4",
     "supertest": "^7.1.4",
     "ts-node": "^10.9.2",
