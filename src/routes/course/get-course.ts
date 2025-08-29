@@ -3,7 +3,6 @@ import { db } from "../../database/client.ts";
 import { courses, enrollments } from "../../database/schema.ts";
 import { and, asc, count, eq, ilike, SQL } from "drizzle-orm";
 import z from "zod";
-import id from "zod/v4/locales/id.js";
 
 export const getCoursesRoute: FastifyPluginAsyncZod = async (server) => {
   server.get(
