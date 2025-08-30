@@ -14,6 +14,7 @@ import { deleteCourseRoute } from "./routes/course/delete-course.ts";
 import { createCourseRoute } from "./routes/course/create-course.ts";
 import { getCoursesRoute } from "./routes/course/get-course.ts";
 import { updateCourseRoute } from "./routes/course/update-course.ts";
+import { createLoginRoute } from "./routes/login/create-login.ts";
 
 const server = fastify({
   logger: {
@@ -51,5 +52,7 @@ server.register(getCourseByIdRoute);
 server.register(getCoursesRoute);
 server.register(deleteCourseRoute);
 server.register(updateCourseRoute);
+
+server.register(createLoginRoute);
 
 export { server };
