@@ -25,7 +25,7 @@ export async function makeUser(role?: "manager" | "student") {
 } //essa função vai criar um usuario no BD
 
 export async function makeAuthenticatedUser(role: "manager" | "student") {
-  const { user } = await makeUser();
+  const { user } = await makeUser(role);
 
   if (!process.env.JWT_SECRET) {
     throw new Error("JWT_SECRET não existe");
